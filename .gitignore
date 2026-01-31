@@ -13,3 +13,11 @@ Frontend/.next/
 Frontend/node_modules/
 *.log
 Backend/pics-storage-37f99-firebase-adminsdk-fbsvc-96dca777fc.json
+
+# Environment variables with secrets
+.env
+.env.local
+.env.*.local
+
+# Firebase credentials
+Backend/pics-storage-*.json
