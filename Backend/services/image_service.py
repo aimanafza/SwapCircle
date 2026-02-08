@@ -37,11 +37,34 @@ def _initialize_firebase():
         pass
     
     # Initialize Firebase
-    if settings.firebase_credentials_path:
+    # Priority: FIREBASE_CREDENTIALS_JSON env var > credentials file > default credentials
+    import os
+    import json
+    import tempfile
+
+    firebase_json = os.getenv("FIREBASE_CREDENTIALS_JSON")
+
+    if firebase_json:
+        # Use JSON string from environment variable (for Render/Railway/etc.)
+        try:
+            cred_dict = json.loads(firebase_json)
+            cred = credentials.Certificate(cred_dict)
+            firebase_admin.initialize_app(cred, {
+                'storageBucket': settings.firebase_storage_bucket
+            })
+        except json.JSONDecodeError as e:
+            raise RuntimeError(
+                f"FIREBASE_CREDENTIALS_JSON is not valid JSON: {str(e)}"
+            )
+        except Exception as e:
+            raise RuntimeError(
+                f"Failed to initialize Firebase from FIREBASE_CREDENTIALS_JSON: {str(e)}"
+            )
+    elif settings.firebase_credentials_path:
         # Use service account file - resolve path relative to Backend directory
         from pathlib import Path
         cred_path = Path(settings.firebase_credentials_path)
-        
+
         if cred_path.is_absolute():
             # Use absolute path as-is
             final_path = cred_path
@@ -52,14 +75,14 @@ def _initialize_firebase():
             # Remove "Backend/" prefix if present in the path
             path_str = str(cred_path).replace('Backend/', '').replace('Backend\\', '')
             final_path = backend_dir / path_str
-        
+
         if not final_path.exists():
             raise RuntimeError(
                 f"Firebase credentials file not found: {final_path}. "
                 f"Please check FIREBASE_CREDENTIALS_PATH in .env file. "
                 f"Expected path relative to Backend directory or absolute path."
             )
-        
+
         try:
             cred = credentials.Certificate(str(final_path))
             firebase_admin.initialize_app(cred, {
@@ -77,7 +100,9 @@ def _initialize_firebase():
             })
         except Exception as e:
             raise RuntimeError(
-                f"Failed to initialize Firebase. Provide FIREBASE_CREDENTIALS_PATH in .env or set GOOGLE_APPLICATION_CREDENTIALS environment variable. Error: {str(e)}"
+                f"Failed to initialize Firebase. Set FIREBASE_CREDENTIALS_JSON env var, "
+                f"provide FIREBASE_CREDENTIALS_PATH in .env, or set GOOGLE_APPLICATION_CREDENTIALS. "
+                f"Error: {str(e)}"
             )
     
     _firebase_initialized = True

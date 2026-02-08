@@ -1,23 +1,35 @@
+# Virtual environments
 .venv
+venv/
+env/
+Backend/venv/
+
+# Python cache
 _pycache_/
 __pycache__/
-Backend/__pycache__/
-Backend/models/__pycache__/
-Backend/routes/__pycache__/
-Backend/services/__pycache__/
-Backend/database/__pycache__/
-Frontend/__pycache__/
+**/__pycache__/
 *.pyc
 **/*.pyc
+
+# Next.js
 Frontend/.next/
 Frontend/node_modules/
+
+# Logs
 *.log
+
+# OS files
+.DS_Store
+**/.DS_Store
+
+# Firebase credentials
 Backend/pics-storage-37f99-firebase-adminsdk-fbsvc-96dca777fc.json
+Backend/pics-storage-*.json
 
 # Environment variables with secrets
 .env
 .env.local
 .env.*.local
 
-# Firebase credentials
-Backend/pics-storage-*.json
+# Test output
+Backend/test_output.txt
